@@ -6,9 +6,11 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 CORS(app)  # ✅ Autorise les requêtes Shopify
+
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 
 # Prix de base
 BASE_PRICE = 10  # Prix minimum
