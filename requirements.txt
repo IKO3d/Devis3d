@@ -2,3 +2,4 @@ flask
 trimesh
 werkzeug
 gunicorn
+flask-cors
