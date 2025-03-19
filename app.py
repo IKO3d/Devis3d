@@ -10,7 +10,7 @@ def calculate_price(volume):
     Calcule le prix basé sur la nouvelle formule ajustée pour Shopify.
     Prix (€) = max(2, 2.4910 * log(Volume) - 16.04)
     """
-    price = 2.4910 * np.log(volume) - 16.04
+    price = (2.4910 * np.log(volume) - 16.04) * 1.10  # Augmentation de 10%
     return max(2, round(price, 2))  # Applique un prix minimum de 2€
 
 app = Flask(__name__)
