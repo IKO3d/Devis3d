@@ -5,13 +5,24 @@ import os
 import numpy as np
 from werkzeug.utils import secure_filename
 
-def calculate_price(volume):
+def calculate_price(volume, material, infill):
     """
-    Calcule le prix basé sur la nouvelle formule ajustée pour Shopify.
-    Prix (€) = max(2, 2.4910 * log(Volume) - 16.04)
+    Calcule le prix basé sur la nouvelle formule ajustée avec :
+    - Augmentation de 10%
+    - Choix du matériau (PETG +15%)
+    - Remplissage : +5% du prix par tranche de 10% d'infill au-delà de 20%
     """
-    price = (2.4910 * np.log(volume) - 16.04) * 1.10  # Augmentation de 10%
-    return max(2, round(price, 2))  # Applique un prix minimum de 2€
+    base_price = (2.4910 * np.log(volume) - 16.04) * 1.10  # Augmentation de 10%
+    
+    # Ajustement selon le matériau
+    if material == "PETG":
+        base_price *= 1.15  # PETG +15%
+    
+    # Ajustement selon le remplissage (chaque 10% au-dessus de 20% ajoute +5% au prix)
+    if infill > 20:
+        base_price *= 1 + (0.05 * ((infill - 20) // 10))
+    
+    return max(2, round(base_price, 2))  # Applique un prix minimum de 2€
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Permet à Shopify d'accéder à l'API
@@ -33,6 +44,10 @@ def analyse_stl():
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(filepath)
 
+    # Récupération des paramètres optionnels
+    material = request.form.get("material", "PLA")  # Par défaut PLA
+    infill = int(request.form.get("infill", 20))  # Par défaut 20%
+
     try:
         mesh = trimesh.load_mesh(filepath)
         volume = mesh.volume
@@ -41,7 +56,7 @@ def analyse_stl():
     finally:
         os.remove(filepath)
 
-    price = calculate_price(volume)
+    price = calculate_price(volume, material, infill)
     return jsonify({"price": price})  # Réponse en JSON lisible par Shopify
 
 if __name__ == '__main__':
