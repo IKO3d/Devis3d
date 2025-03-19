@@ -1,0 +1,4 @@
+flask
+trimesh
+werkzeug
+gunicorn
