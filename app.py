@@ -44,9 +44,15 @@ def analyse_stl():
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(filepath)
 
-    # Récupération des paramètres optionnels
+    # Récupération des paramètres optionnels avec sécurisation
     material = request.form.get("material", "PLA")  # Par défaut PLA
-    infill = int(request.form.get("infill", 20))  # Par défaut 20%
+    try:
+        infill = int(request.form.get("infill", 20))  # Par défaut 20%
+    except ValueError:
+        return jsonify({"error": "Valeur incorrecte pour le remplissage"}), 400
+
+    print(f"Matériau reçu: {material}")
+    print(f"Remplissage reçu: {infill}")
 
     try:
         mesh = trimesh.load_mesh(filepath)
